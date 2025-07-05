@@ -3,7 +3,7 @@ import sys
 import heapq
 
 import os 
-
+import math
 class BalancedSorterPways:
     def __init__(self, p_ways: int, input_file: str, output_file: str):
         
@@ -34,6 +34,20 @@ class BalancedSorterPways:
         print("sort")
     
 
+    def create_run_file(self, directory, index_run):
+        """
+        Cria um arquivo temporario para armazenar a run ordenada
+        """
+        try:
+            path_run_file = os.path.join(directory, f"run_{index_run}.txt")
+
+            with open(path_run_file, "w") as f:
+                pass
+            return path_run_file
+        
+        except Exception as e:
+            raise Exception(f"{e}")
+    
 
     def generate_runs(self):
         
@@ -68,10 +82,15 @@ class BalancedSorterPways:
                         break
 
                     numero = int(linha.strip())
-                    heapq.heappush(min_heap, numero)
+                    heapq.heappush(min_heap, (numero, is_marked := False))
                     self.processed_regs += 1
 
-                numeros_marcados = []
+                print(min_heap)
+
+
+                registros_marcados = []
+
+
 
 
                 # enquanto heap nao estiver vazia e ainda houver numeros marcados
@@ -82,25 +101,67 @@ class BalancedSorterPways:
                 # se a lista de numeros marcados estiver vazia, escrever o menor elemento da heap
                 # no arquivo de saida e continuar o loop 
 
-                while min_heap or numeros_marcados:
+                index_run = 0
+                ultimo_inserido = math.inf; 
 
-                    menor = heapq.heappop(min_heap)
-                
-            
+                while min_heap or registros_marcados:
+
+                    if not min_heap:
+                        """Acabou a sequencia anterior assim
+                        leva todos os marcados para a min_reap 
+                        """
+                        
+                        min_heap = registros_marcados
+                        heapq.heapify(min_heap)
+                        index_run += 1
+                        registros_marcados = []
+                        ultimo_inserido = math.inf  # Resetando o ultimo inserido para o novo
+
+                    
+                    #Criar arquivo temporario para run inicial
+                    
+                    path_run_file = self.create_run_file("temp", index_run)
+                    with open(path_run_file, "w") as temp_run_file:
+
+                        
+                        while min_heap:
+                            # Pega o menor elemento da heap
+                            numero = heapq.heappop(min_heap)
+                            
+
+                            # Verifica se o numero é maior que o ultimo inserido
+                            if numero > ultimo_inserido:
+                                # Escreve o numero no arquivo de run
+                                temp_run_file.write(f"{numero}\n")
+                                ultimo_inserido = numero
+                                self.runs += 1
+
+                                # ler proximo e joga na heap
+                                linha = entrada.readline()
+                                if not linha:
+                                    break           
+                                proximo_numero = int(linha.strip())
+                                heapq.heappush(min_heap)
+                            else:
+                                # Marca o numero como marcado
+                                registros_marcados.append((numero))
+
+                    return run_file
+                    
+                            
+
+                                                        
+
+                            
 
 
 
 
-                
-                
 
 
 
 
-
-
-
-                
+                    
 
         except FileNotFoundError:
             raise("Arquivo não encontrado")
