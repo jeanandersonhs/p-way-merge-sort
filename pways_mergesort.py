@@ -122,35 +122,35 @@ class BalancedSorterPways:
 
                     
                     #Criar arquivo temporario para run inicial
-                    path_run_file = self.create_run_file("temp", index_run)
-                    self.runs += 1
-
+                    path_run_file = self.create_run_file("temp",0, index_run)
+                    current_run_file = open(path_run_file, "w")
+                    run_files.append(current_run_file)
 
                     
-                    with open(path_run_file, "w") as temp_run_file:
+                    
 
                         
-                        while min_heap:
-                            # Pega o menor elemento da heap
-                            numero = heapq.heappop(min_heap)
-                            
+                    while min_heap:
+                        # Pega o menor elemento da heap
+                        smallest_number = heapq.heappop(min_heap)
+                        
 
-                            # Verifica se o numero é maior que o ultimo inserido
-                            if numero > ultimo_inserido:
-                                # Escreve o numero no arquivo de run
-                                temp_run_file.write(f"{numero}\n")
-                                ultimo_inserido = numero
-                                self.processed_regs += 1
+                        # Verifica se o numero é maior que o ultimo inserido
+                        if smallest_number >= ultimo_inserido:
+                            # Escreve o numero no arquivo de run
+                            temp_run_file.write(f"{smallest_number}\n")
+                            ultimo_inserido = smallest_number
+                            self.processed_regs += 1
 
-                                # ler proximo e joga na heap
-                                linha = entrada.readline()
-                                if not linha:
-                                    continue           
-                                proximo_numero = int(linha.strip())
-                                heapq.heappush(min_heap, proximo_numero)
-                            else:
-                                # Marca o numero como marcado
-                                registros_marcados.append((numero))
+                            # ler proximo e joga na heap
+                            linha = entrada.readline()
+                            if not linha:
+                                continue           
+                            proximo_numero = int(linha.strip())
+                            heapq.heappush(min_heap, proximo_numero)
+                        else:
+                            # Marca o numero como marcado
+                            registros_marcados.append((numero))
 
                     with open(path_run_file, "r") as temp_run_file:
                         arquivo = temp_run_file.read()
