@@ -4,6 +4,7 @@ import heapq
 
 import os 
 import math
+import tempfile
 class BalancedSorterPways:
     def __init__(self, p_ways: int, input_file: str, output_file: str):
         
@@ -19,7 +20,7 @@ class BalancedSorterPways:
 
 
 
-    def sort():
+    def sort(self):
         
         """
         Gerar as sequencias iniciais ordenadas(runs) utilizando algoritmo
@@ -36,17 +37,22 @@ class BalancedSorterPways:
 
     def create_run_file(self, directory, index_run):
         """
-        Cria um arquivo temporario para armazenar a run ordenada
+        Cria um arquivo temporário para armazenar a run ordenada,
+        não excluído automaticamente, dentro do diretório especificado.
+        Retorna o caminho relativo do arquivo criado.
         """
-        try:
-            path_run_file = os.path.join(directory, f"run_{index_run}.txt")
 
-            with open(path_run_file, "w") as f:
-                pass
-            return path_run_file
-        
+        # Garante que o diretório existe
+        os.makedirs(directory, exist_ok=True)
+
+        try:
+            fd, absolute_path = tempfile.mkstemp(
+                prefix=f"run_file{index_run}_", suffix=".txt", dir=directory, text=True
+            )
+            os.close(fd)  # Fecha o descritor, apenas queremos o caminho
+            return os.path.relpath(absolute_path)
         except Exception as e:
-            raise Exception(f"{e}")
+            raise Exception(f"erro ao criar arquivo temporario {e}")
     
 
     def generate_runs(self):
@@ -63,7 +69,7 @@ class BalancedSorterPways:
         retorna os arquivos criados para alternar
 
         """
-
+        run_files = []
         heap_inicial = []
 
        
@@ -82,14 +88,13 @@ class BalancedSorterPways:
                         break
 
                     numero = int(linha.strip())
-                    heapq.heappush(min_heap, (numero, is_marked := False))
+                    heapq.heappush(min_heap, numero)
                     self.processed_regs += 1
 
                 print(min_heap)
 
 
                 registros_marcados = []
-
 
 
 
@@ -102,7 +107,7 @@ class BalancedSorterPways:
                 # no arquivo de saida e continuar o loop 
 
                 index_run = 0
-                ultimo_inserido = math.inf; 
+                ultimo_inserido = -math.inf 
 
                 while min_heap or registros_marcados:
 
@@ -115,12 +120,15 @@ class BalancedSorterPways:
                         heapq.heapify(min_heap)
                         index_run += 1
                         registros_marcados = []
-                        ultimo_inserido = math.inf  # Resetando o ultimo inserido para o novo
+                        ultimo_inserido = -math.inf  # Resetando o ultimo inserido para o novo
 
                     
                     #Criar arquivo temporario para run inicial
-                    
                     path_run_file = self.create_run_file("temp", index_run)
+                    self.runs += 1
+
+
+                    
                     with open(path_run_file, "w") as temp_run_file:
 
                         
@@ -134,34 +142,26 @@ class BalancedSorterPways:
                                 # Escreve o numero no arquivo de run
                                 temp_run_file.write(f"{numero}\n")
                                 ultimo_inserido = numero
-                                self.runs += 1
+                                self.processed_regs += 1
 
                                 # ler proximo e joga na heap
                                 linha = entrada.readline()
                                 if not linha:
-                                    break           
+                                    continue           
                                 proximo_numero = int(linha.strip())
-                                heapq.heappush(min_heap)
+                                heapq.heappush(min_heap, proximo_numero)
                             else:
                                 # Marca o numero como marcado
                                 registros_marcados.append((numero))
 
-                    return run_file
-                    
-                            
-
-                                                        
-
-                            
-
-
-
-
-
-
-
+                    with open(path_run_file, "r") as temp_run_file:
+                        arquivo = temp_run_file.read()
+                        print(f"sequencia criada: {arquivo}")
+                    run_files.append(path_run_file)
 
                     
+                    
+                            
 
         except FileNotFoundError:
             raise("Arquivo não encontrado")
