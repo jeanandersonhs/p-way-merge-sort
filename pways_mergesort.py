@@ -79,17 +79,15 @@ class BalancedSorterPways:
             with open (self.input_file, "r") as entrada:
             
                 min_heap = []
+                conteudo = entrada.read()
                 
+                numeros = iter(int(x) for x in conteudo.split() if x.isdigit())
                 for _ in range(self.p_ways):
-                    linha = entrada.readline()
-                    
-                    #verifica se a linha está vazia
-                    if not linha:
+                    try:
+                        numero = next(numeros)
+                        heapq.heappush(min_heap, (numero,0))
+                    except StopIteration:
                         break
-
-                    numero = int(linha.strip())
-                    heapq.heappush(min_heap, numero)
-                    self.processed_regs += 1
 
                 print(min_heap)
 
