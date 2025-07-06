@@ -122,7 +122,7 @@ class BalancedSorterPways:
 
                     
                     #Criar arquivo temporario para run inicial
-                    path_run_file = self.create_run_file("temp",0, index_run)
+                    path_run_file = self.create_run_file("temp", index_run)
                     current_run_file = open(path_run_file, "w")
                     run_files.append(current_run_file)
 
