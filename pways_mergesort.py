@@ -73,7 +73,7 @@ class BalancedSorterPways:
 
         """
         run_files = []
-        log.info("Gerando runs iniciais...")
+      
 
        
 
@@ -200,3 +200,7 @@ def main():
          sort.generate_runs()
     except Exception as e: 
         print(f"Error {e}")
+
+
+if __name__ == "__main__":
+    main()
