@@ -83,18 +83,20 @@ class BalancedSorterPways:
             
                 min_heap = []
                 
+                conteudo = entrada.read()
+
+                numeros = iter(int(x) for x in conteudo.split() if x.isdigit())
                 for _ in range(self.p_ways):
-                    linha = entrada.readline()
-                    
-                    #verifica se a linha está vazia
-                    if not linha:
+                    try:
+                        numero = next(numeros)
+                        heapq.heappush(min_heap, (numero))
+                    except StopIteration:
                         break
 
-                    numero = int(linha.strip())
-                    heapq.heappush(min_heap, numero)
-                    self.processed_regs += 1
-
                 print(min_heap)
+
+                if not min_heap:
+                    return []
 
 
                 registros_marcados = []
@@ -146,11 +148,17 @@ class BalancedSorterPways:
                                 self.processed_regs += 1
 
                                 # ler proximo e joga na heap
-                                linha = entrada.readline()
-                                if not linha:
-                                    continue           
-                                proximo_numero = int(linha.strip())
-                                heapq.heappush(min_heap, proximo_numero)
+                                          
+
+
+                                try:
+                                    proximo_numero = next(numeros)
+
+                                    heapq.heappush(min_heap, proximo_numero)
+
+                                except StopIteration:   
+                                    pass
+                               
                             else:
                                 # Marca o numero como marcado
                                 registros_marcados.append((numero))
