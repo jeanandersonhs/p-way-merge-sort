@@ -36,6 +36,13 @@ class BalancedSorterPways:
 
         # Gera as runs iniciais
         path_run_files  = self.generate_runs()
+
+        # verifica se há arquivos
+        if not path_run_files:
+            return
+
+        #merge 
+        self.merge_runs(path_run_files)
         
 
     def create_run_file(self, directory, index_run):
@@ -89,7 +96,7 @@ class BalancedSorterPways:
                 for _ in range(self.p_ways):
                     try:
                         numero = next(numeros)
-                        heapq.heappush(min_heap, (numero))
+                        heapq.heappush(min_heap, numero)
                     except StopIteration:
                         break
 
@@ -148,8 +155,7 @@ class BalancedSorterPways:
                                 self.processed_regs += 1
 
                                 # ler proximo e joga na heap      
-
-
+                
                                 try:
                                     proximo_numero = next(numeros)
 
@@ -170,28 +176,131 @@ class BalancedSorterPways:
 
         except FileNotFoundError:
             raise("Arquivo não encontrado")
+        
+
+    def merge_runs(self, run_files: list):
+        """
+        Intercala arquivos usando uma min-heap 
+        no maximo 2p arquivos abertos 
+        """
+        print("merge") 
+
+
+        if len(run_files)<=1:
+            return run_files[0] if run_files else None
+
+        level = 0
+
+        #apontando para runs iniciais gerados
+        current_files = run_files
+        while len(current_files) > 1:
+            level+=1
+
+            new_merged_files = []
+
+
+            # intercalar em grupos de p tamanho 
+            for i in range(0, len(current_files), self.p_ways ):
+                group_files = current_files[i: i+ self.p_ways]
+
+                merged_file = self.merge_groups(group_files)
+                new_merged_files.append(merged_file)
+
+            
+            #arquivos intercalados
+
+                for arquivo in group_files:
+                    try:
+                        os.remove(arquivo)
+                    except OSError:
+                        pass
+
+            current_files = new_merged_files
+            print(f"Nivel {level} - Arquivos intercalados: {len(current_files)}")
+
+        # Se sobrou apenas um arquivo, retorna ele 
+        return current_files[0] if current_files else None
+            
+
+     
+        
+
+    def merge_groups(self, group_files, level, index_group):
+
+        """
+            intercala um grupo de até p arquivos
+            Garante que no máximo p arquivos estão abertos (entrada) + 1 arquivo (saida)
+        """
+
+        if len(group_files)==1:
+            return group_files[0]
+        
+
+        file_out = self.create_run_file("temp", index_group)
+
+        # 
+        input_files_merge = []
+
+        for file in group_files:
+            try:
+                f = open(file, "r")
+                input_files_merge.append(f)
+            except FileNotFoundError:
+                print(f"arquivo {file} nao encontrao")
+                continue
+        
+
+        try:
+
+            heap_merge = []
+
+            for i, arquivo in enumerate(input_files_merge):
+                conteudo = arquivo.readline()
+                
+                if conteudo:
+                    valor = int(conteudo.strip())
+                    heapq.heappush(heap_merge, (valor,i))
+
+            with open(file_out, "w") as saida:
+                while heap_merge:
+                    # Pega o menor elemento da heap
+                    valor, indice = heapq.heappop(heap_merge)
+
+                    # Escreve o valor no arquivo de saída
+                    saida.write(f"{valor}\n")
+
+                    # Lê o próximo valor do arquivo correspondente
+                    conteudo = input_files_merge[indice].readline()
+                    
+                    if conteudo:
+                        novo_valor = int(conteudo.strip())
+                        heapq.heappush(heap_merge, (novo_valor, indice))
+                    else:
+                        # Se não houver mais valores, não adiciona nada à heap
+                        pass
+            
+            
+            return file_out
+        
+        except Exception as e:
+            print(f"Erro ao mesclar arquivos: {e}")
+            raise e
                 
 
 
 
 
+                
+
+                
 
 
+        finally:
+            for file in input_files_merge:
+                file.close()
 
-        
+        return file_out
 
-
-
-
-
-
-
-
-
-
-
-
-    
 
 
 def main():
