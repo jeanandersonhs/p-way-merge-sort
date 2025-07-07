@@ -147,8 +147,7 @@ class BalancedSorterPways:
                                 ultimo_inserido = numero
                                 self.processed_regs += 1
 
-                                # ler proximo e joga na heap
-                                          
+                                # ler proximo e joga na heap      
 
 
                                 try:
