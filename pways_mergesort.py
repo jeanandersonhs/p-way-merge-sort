@@ -334,8 +334,8 @@ class BalancedSorterPways:
             #Regs Ways #Runs #Parses
               25   3     5      2
         """
-        print(f"#Regs Ways #Runs #Parses\n"
-             f" {self.total_regs}   {self.p_ways}     {self.runs}      {self.parses}")
+        print(f"#Regs\tWays\t#Runs\t#Parses\n"
+             f" {self.total_regs}\t{self.p_ways}\t{self.runs}\t{self.parses}")
 
 def main():
 
