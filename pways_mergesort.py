@@ -5,6 +5,7 @@ import heapq
 import os 
 import math
 import tempfile
+import shutil
 class BalancedSorterPways:
     def __init__(self, p_ways: int, input_file: str, output_file: str):
         
@@ -14,7 +15,7 @@ class BalancedSorterPways:
         self.input_file = input_file
         self.output_file = output_file
         self.p_ways = p_ways
-        self.processed_regs = 0
+        self.total_regs = 0
         self.runs = 0
         self.parses =0
 
@@ -23,12 +24,13 @@ class BalancedSorterPways:
     def sort(self):
         
         """
-        Gerar as sequencias iniciais ordenadas(runs) utilizando algoritmo
-        de selecao por substituicao
-
-        Intercalacao de ate p sequencias para gerar um unico arquivo ordenado 
-
-        Geracao da saida 
+        Gerenciamento do processo de ordenação
+        - Gera as runs iniciais
+        - Verifica se há arquivos gerados
+        - Realiza o merge das runs
+        - Gera o arquivo de saída final
+        - Exclui os arquivos temporários
+        - Exibe estatísticas do processo de ordenação
 
         
         """
@@ -36,6 +38,19 @@ class BalancedSorterPways:
 
         # Gera as runs iniciais
         path_run_files  = self.generate_runs()
+
+        # verifica se há arquivos
+        if not path_run_files:
+            return
+
+        #merge 
+        saida = self.merge_runs(path_run_files)
+
+        # Gera o arquivo de saída final
+        self.generate_output(saida)
+
+        #mostrar estatisticas
+        self.show_stats()
         
 
     def create_run_file(self, directory, index_run):
@@ -89,7 +104,7 @@ class BalancedSorterPways:
                 for _ in range(self.p_ways):
                     try:
                         numero = next(numeros)
-                        heapq.heappush(min_heap, (numero))
+                        heapq.heappush(min_heap, numero)
                     except StopIteration:
                         break
 
@@ -145,11 +160,10 @@ class BalancedSorterPways:
                                 # Escreve o numero no arquivo de run
                                 temp_run_file.write(f"{numero}\n")
                                 ultimo_inserido = numero
-                                self.processed_regs += 1
+                                self.total_regs += 1
 
                                 # ler proximo e joga na heap      
-
-
+                
                                 try:
                                     proximo_numero = next(numeros)
 
@@ -170,29 +184,157 @@ class BalancedSorterPways:
 
         except FileNotFoundError:
             raise("Arquivo não encontrado")
-                
-
-
-
-
-
-
-
         
 
+    def merge_runs(self, run_files: list):
+        """
+        Intercala arquivos usando uma min-heap 
+        no maximo 2p arquivos abertos 
+        """
+        print("merge") 
 
 
+        if len(run_files)<=1:
+            return run_files[0] if run_files else None
+
+        level = 0
+
+        #apontando para runs iniciais gerados
+        current_files = run_files
+        while len(current_files) > 1:
+            level+=1
+
+            new_merged_files = []
 
 
+            # intercalar em grupos de p tamanho 
+            for i in range(0, len(current_files), self.p_ways ):
 
+                #pode dar index of ra
+                group_files = current_files[i: i+ self.p_ways]
 
+                merged_file = self.merge_groups(group_files)
+                new_merged_files.append(merged_file)
 
+            
+            #arquivos intercalados
 
+                for arquivo in group_files:
+                    try:
+                        os.remove(arquivo)
+                    except OSError:
+                        pass
 
+            current_files = new_merged_files
+            print(f"Nivel {level} - Arquivos intercalados: {len(current_files)}")
 
+        # Se sobrou apenas um arquivo, retorna ele 
+        return current_files[0] if current_files else None
+            
 
+     
+        
+
+    def merge_groups(self, group_files, index_group=0):
+
+        """
+            intercala um grupo de até p arquivos
+            Garante que no máximo p arquivos estão abertos (entrada) + 1 arquivo (saida)
+        """
+
+        if len(group_files)==1:
+            return group_files[0]
+        
+
+        file_out = self.create_run_file("temp", index_group)
+
+        # 
+        input_files_merge = []
+
+        for file in group_files:
+            try:
+                f = open(file, "r")
+                input_files_merge.append(f)
+            except FileNotFoundError:
+                print(f"arquivo {file} nao encontrao")
+                continue
+        
+
+        try:
+
+            #heap para intercalar os arquivos
+            # cada elemento da heap é uma tupla (valor, indice_arquivo)
+            heap_merge = []
+
+            # Inicializa a heap com o primeiro valor de cada arquivo
+            for i, arquivo in enumerate(input_files_merge):
+                conteudo = arquivo.readline()
+                
+                if conteudo:
+                    valor = int(conteudo.strip())
+                    # i indica indice do arquivo 
+                    heapq.heappush(heap_merge, (valor,i))
+
+            #intercala os arquivos até que a heap esteja vazia
+            with open(file_out, "w") as saida:
+                while heap_merge:
+                    # Pega o menor elemento da heap
+                    valor, indice = heapq.heappop(heap_merge)
+
+                    # Escreve o valor no arquivo de saída
+                    saida.write(f"{valor}\n")
+
+                    # Lê o próximo valor do arquivo correspondente
+                    conteudo = input_files_merge[indice].readline()
+                    
+                    if conteudo:
+                        novo_valor = int(conteudo.strip())
+                        heapq.heappush(heap_merge, (novo_valor, indice))
+                    
+        
+        except Exception as e:
+            print(f"Erro ao mesclar arquivos: {e}")
+            raise e
+
+        finally:
+            # Fecha todos os arquivos de entrada    
+            for file in input_files_merge:
+                file.close()
+            
+            # remover arquivos temporários
+            for file in group_files:
+                try:
+                    os.remove(file)
+                except OSError:
+                    print(f"Erro ao remover arquivo temporário: {file}")
+
+        return file_out
+
+    #copiar arquivo de saida para o arquivo de saida final
+    def generate_output(self, file_out):
+        """
+        Copia o arquivo de saida temporario para o arquivo de saida final
+        e excluir o arquivo temporário.
+        """
+        
+        shutil.copy(file_out, self.output_file)
+        print(f"Arquivo de saída gerado: {self.output_file}")   
+        # excluir o arquivo e diretorio temporario
+        try:
+            shutil.rmtree("temp")
+        except OSError as e:
+            print(f"Erro ao remover diretório temporário: {e}")
     
+    def show_stats(self):
+        """
+        Mostra estatisticas do processo de ordenacao
 
+
+            #Regs Ways #Runs #Parses
+              25   3     5      2
+        """
+        print(f"#Regs Ways #Runs #Parses\n"
+             f" {self.total_regs}   {self.p_ways}     {self.runs}      {self.parses}")
 
 def main():
 
@@ -204,7 +346,7 @@ def main():
          output_file = (sys.argv[3])
 
          sort = BalancedSorterPways(p_ways, input_file, output_file)
-         sort.generate_runs()
+         sort.sort()
     except Exception as e: 
         print(f"Error {e}")
 
