@@ -1,6 +1,7 @@
 
 import sys
 import heapq
+from heap import *
 
 import os 
 import math
