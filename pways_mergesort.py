@@ -135,16 +135,16 @@ class BalancedSorterPways:
                         leva todos os marcados para a min_reap 
                         """
                         
+                        index_run += 1
                         min_heap = registros_marcados
                         heapq.heapify(min_heap)
-                        index_run += 1
                         registros_marcados = []
                         ultimo_inserido = -math.inf  # Resetando o ultimo inserido para o novo
 
                     
                     #Criar arquivo temporario para run inicial
                     path_run_file = self.create_run_file("temp", index_run)
-                    self.runs += 1
+                    # self.runs += 1
 
 
                     
@@ -157,7 +157,7 @@ class BalancedSorterPways:
                             
 
                             # Verifica se o numero é maior que o ultimo inserido
-                            if numero > ultimo_inserido:
+                            if numero >= ultimo_inserido:
                                 # Escreve o numero no arquivo de run
                                 temp_run_file.write(f"{numero}\n")
                                 ultimo_inserido = numero
@@ -176,11 +176,20 @@ class BalancedSorterPways:
                             else:
                                 # Marca o numero como marcado
                                 registros_marcados.append((numero))
+                    # Só adiciona aos arquivos se foi escrito algo
 
-                    with open(path_run_file, "r") as temp_run_file:
-                        arquivo = temp_run_file.read()
-                        print(f"sequencia criada: {arquivo}")
-                    run_files.append(path_run_file)
+                    if os.path.getsize(path_run_file) > 0:
+                        run_files.append(path_run_file)
+                        self.runs += 1
+                        print(f"entrou {self.runs} runs")
+                        
+                        with open(path_run_file, "r") as temp_run_file:
+                            arquivo = temp_run_file.read()
+                            print(f"sequencia criada: {arquivo.strip()}")
+                    else:
+                        os.remove(path_run_file)
+                    
+                      
             return run_files
 
         except FileNotFoundError:
@@ -212,7 +221,7 @@ class BalancedSorterPways:
             for i in range(0, len(current_files), self.p_ways ):
 
                 #pode dar index of ra
-                group_files = current_files[i: i+ self.p_ways]
+                group_files = current_files[i: i+self.p_ways]
 
                 merged_file = self.merge_groups(group_files)
                 new_merged_files.append(merged_file)
@@ -227,6 +236,7 @@ class BalancedSorterPways:
                         pass
 
             current_files = new_merged_files
+            self.parses += 1
             print(f"Nivel {level} - Arquivos intercalados: {len(current_files)}")
 
         # Se sobrou apenas um arquivo, retorna ele 
@@ -254,8 +264,9 @@ class BalancedSorterPways:
 
         for file in group_files:
             try:
-                f = open(file, "r")
-                input_files_merge.append(f)
+                if os.path.exists(file):
+                    f = open(file, "r")
+                    input_files_merge.append(f)
             except FileNotFoundError:
                 print(f"arquivo {file} nao encontrao")
                 continue
@@ -334,8 +345,8 @@ class BalancedSorterPways:
             #Regs Ways #Runs #Parses
               25   3     5      2
         """
-        print(f"#Regs Ways #Runs #Parses\n"
-             f" {self.total_regs}   {self.p_ways}     {self.runs}      {self.parses}")
+        print(f"#Regs\tWays\t#Runs\t#Parses\n"
+             f" {self.total_regs}\t{self.p_ways}\t{self.runs}\t{self.parses}")
 
 def main():
 
