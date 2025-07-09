@@ -77,3 +77,6 @@ Ao final da execução, além de gerar o arquivo de saída ordenado, o programa 
 -   `Ways`: O valor de `p` (caminhos) utilizado.
 -   `#Runs`: O número de sequências ordenadas iniciais geradas.
 -   `#Parses`: O número de passagens de intercalação necessárias para obter o arquivo final ordenado.
+
+
+Desenvolvido por Jean Anderson Hugo Jesus Santos
