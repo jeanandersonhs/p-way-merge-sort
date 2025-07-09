@@ -9,6 +9,10 @@ class Node:
     
     def __repr__(self):
         return f"Node({self.value})"
+    
+    def valor(self):
+        """Retorna o valor do nó"""
+        return self.value
 
 
 class MinHeap:
@@ -16,6 +20,10 @@ class MinHeap:
     
     def __init__(self):
         self.heap = []
+
+    def __len__(self):
+        """Retorna o tamanho do heap"""
+        return self.heap
     
     def _parent_index(self, index):
         """Retorna o índice do pai do nó no índice dado"""
@@ -81,9 +89,9 @@ class MinHeap:
             self._swap(index, smaller_child_index)
             index = smaller_child_index
     
-    def push(self, value):
+    def push(self, value, bit=0):
         """Adiciona um novo elemento ao heap"""
-        node = Node(value)
+        node = Node(value, bit)
         self.heap.append(node)
         self._heapify_up(len(self.heap) - 1)
     
@@ -103,7 +111,7 @@ class MinHeap:
         if len(self.heap) > 0:
             self._heapify_down(0)
         
-        return min_item.value
+        return min_item
     
     def peek(self):
         """Retorna o menor elemento sem removê-lo"""
