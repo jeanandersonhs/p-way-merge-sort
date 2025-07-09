@@ -3,10 +3,13 @@ import sys
 import heapq
 from heap import *
 
+import time
 import os 
 import math
 import tempfile
 import shutil
+
+from heap import *
 class BalancedSorterPways:
     def __init__(self, p_ways: int, input_file: str, output_file: str):
         
@@ -97,7 +100,7 @@ class BalancedSorterPways:
             # ler um a um e colocar na heap inicial
             with open (self.input_file, "r") as entrada:
             
-                min_heap = []
+                min_heap = MinHeap()
                 
                 conteudo = entrada.read()
 
@@ -105,13 +108,14 @@ class BalancedSorterPways:
                 for _ in range(self.p_ways):
                     try:
                         numero = next(numeros)
-                        heapq.heappush(min_heap, numero)
+                        #heapq.heappush(min_heap, numero)
+                        min_heap.push(numero)
                     except StopIteration:
                         break
 
                 print(min_heap)
 
-                if not min_heap:
+                if not min_heap.__len__():
                     return []
 
 
@@ -128,36 +132,37 @@ class BalancedSorterPways:
                 index_run = 0
                 ultimo_inserido = -math.inf 
 
-                while min_heap or registros_marcados:
+                while min_heap.__len__() or registros_marcados:
 
-                    if not min_heap:
+                    if not min_heap.__len__():
                         """Acabou a sequencia anterior assim
                         leva todos os marcados para a min_reap 
                         """
                         
-                        min_heap = registros_marcados
-                        heapq.heapify(min_heap)
                         index_run += 1
+                        #min_heap = registros_marcados
+                        #heapq.heapify(min_heap)
+                        min_heap.heapify(registros_marcados)
                         registros_marcados = []
                         ultimo_inserido = -math.inf  # Resetando o ultimo inserido para o novo
 
                     
                     #Criar arquivo temporario para run inicial
                     path_run_file = self.create_run_file("temp", index_run)
-                    self.runs += 1
+                    # self.runs += 1
 
 
                     
                     with open(path_run_file, "w") as temp_run_file:
 
                         
-                        while min_heap:
+                        while min_heap.__len__():
                             # Pega o menor elemento da heap
-                            numero = heapq.heappop(min_heap)
-                            
+                            #numero = heapq.heappop(min_heap)
+                            numero = min_heap.pop().valor()
 
                             # Verifica se o numero é maior que o ultimo inserido
-                            if numero > ultimo_inserido:
+                            if numero >= ultimo_inserido:
                                 # Escreve o numero no arquivo de run
                                 temp_run_file.write(f"{numero}\n")
                                 ultimo_inserido = numero
@@ -168,7 +173,8 @@ class BalancedSorterPways:
                                 try:
                                     proximo_numero = next(numeros)
 
-                                    heapq.heappush(min_heap, proximo_numero)
+                                    #heapq.heappush(min_heap, proximo_numero)
+                                    min_heap.push(proximo_numero)
 
                                 except StopIteration:   
                                     pass
@@ -176,11 +182,19 @@ class BalancedSorterPways:
                             else:
                                 # Marca o numero como marcado
                                 registros_marcados.append((numero))
+                    # Só adiciona aos arquivos se foi escrito algo
 
-                    with open(path_run_file, "r") as temp_run_file:
-                        arquivo = temp_run_file.read()
-                        print(f"sequencia criada: {arquivo}")
-                    run_files.append(path_run_file)
+                    if os.path.getsize(path_run_file) > 0:
+                        run_files.append(path_run_file)
+                        self.runs += 1
+                        print(f"entrou {self.runs} runs")
+                        
+                        with open(path_run_file, "r") as temp_run_file:
+                            arquivo = temp_run_file.read()
+                            print(f"sequencia criada: {arquivo.strip()}")
+                    else:
+                        os.remove(path_run_file)
+                    
             return run_files
 
         except FileNotFoundError:
@@ -212,7 +226,7 @@ class BalancedSorterPways:
             for i in range(0, len(current_files), self.p_ways ):
 
                 #pode dar index of ra
-                group_files = current_files[i: i+ self.p_ways]
+                group_files = current_files[i: i+self.p_ways]
 
                 merged_file = self.merge_groups(group_files)
                 new_merged_files.append(merged_file)
@@ -227,6 +241,7 @@ class BalancedSorterPways:
                         pass
 
             current_files = new_merged_files
+            self.parses += 1
             print(f"Nivel {level} - Arquivos intercalados: {len(current_files)}")
 
         # Se sobrou apenas um arquivo, retorna ele 
@@ -254,8 +269,9 @@ class BalancedSorterPways:
 
         for file in group_files:
             try:
-                f = open(file, "r")
-                input_files_merge.append(f)
+                if os.path.exists(file):
+                    f = open(file, "r")
+                    input_files_merge.append(f)
             except FileNotFoundError:
                 print(f"arquivo {file} nao encontrao")
                 continue
@@ -265,7 +281,7 @@ class BalancedSorterPways:
 
             #heap para intercalar os arquivos
             # cada elemento da heap é uma tupla (valor, indice_arquivo)
-            heap_merge = []
+            heap_merge = MinHeap()
 
             # Inicializa a heap com o primeiro valor de cada arquivo
             for i, arquivo in enumerate(input_files_merge):
@@ -274,13 +290,16 @@ class BalancedSorterPways:
                 if conteudo:
                     valor = int(conteudo.strip())
                     # i indica indice do arquivo 
-                    heapq.heappush(heap_merge, (valor,i))
+                    #heapq.heappush(heap_merge, (valor,i))
+                    heap_merge.push((valor,i))
+            
 
             #intercala os arquivos até que a heap esteja vazia
             with open(file_out, "w") as saida:
-                while heap_merge:
+                while heap_merge.__len__():
                     # Pega o menor elemento da heap
-                    valor, indice = heapq.heappop(heap_merge)
+                    #valor, indice = heapq.heappop(heap_merge)
+                    valor, indice = heap_merge.pop().valor()
 
                     # Escreve o valor no arquivo de saída
                     saida.write(f"{valor}\n")
@@ -290,7 +309,8 @@ class BalancedSorterPways:
                     
                     if conteudo:
                         novo_valor = int(conteudo.strip())
-                        heapq.heappush(heap_merge, (novo_valor, indice))
+                        #heapq.heappush(heap_merge, (novo_valor, indice))
+                        heap_merge.push((novo_valor, indice))
                     
         
         except Exception as e:
@@ -330,14 +350,17 @@ class BalancedSorterPways:
         """
         Mostra estatisticas do processo de ordenacao
 
-
+            exemplo de saida:
             #Regs Ways #Runs #Parses
               25   3     5      2
         """
-        print(f"#Regs\t#Ways\t#Runs\t#Parses\n"
+
+        print(f"#Regs\tWays\t#Runs\t#Parses\n"
              f" {self.total_regs}\t{self.p_ways}\t{self.runs}\t{self.parses}")
 
 def main():
+    inicio = time.time()
+
 
     if len(sys.argv) != 4:
         print(f"Argumentos insuficientes\n Tente: python3 pwats_mergesort.py <p_ways> input_file.text output_file.text ")
@@ -348,6 +371,9 @@ def main():
 
          sort = BalancedSorterPways(p_ways, input_file, output_file)
          sort.sort()
+        
+         fim = time.time()
+         print(f"fim {fim - inicio} segundos")
     except Exception as e: 
         print(f"Error {e}")
 
