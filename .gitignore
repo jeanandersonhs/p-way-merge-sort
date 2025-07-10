@@ -1,12 +1,15 @@
+
+# Ignore Visual Studio Code settings and workspace files
 .vscode
 
+# Ignore JetBrains IDE settings and project files
 .idea
+
 
 
 COMENTS.md
 
-
-
 /temp
 
 __pycache__
+
