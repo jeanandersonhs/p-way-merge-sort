@@ -94,6 +94,14 @@ python3 pways_mergesort.py <p> <arquivo_de_entrada> <arquivo_de_saida>
 python3 pways_mergesort.py 3 input_file.txt output_file.txt
 ```
 
+#### Limpar saida e Executar novamente
+Para executar novamente basta limpar o arquivo de saida(_output_file.txt_) por meio de 
+```bash
+python clean.py
+```
+
+E assim pode ser refeito os passos de execução via `shell`
+
 ## Formato da Saída
 
 Ao final da execução, além de gerar o arquivo de saída ordenado, o programa exibirá estatísticas sobre o processo de ordenação no console:
