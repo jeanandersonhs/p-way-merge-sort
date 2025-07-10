@@ -26,7 +26,37 @@ O algoritmo opera em duas fases principais:
 
 ## Como Executar
 
-Siga os passos abaixo para clonar e executar o projeto localmente.
+### Executando no Replit (Recomendado)
+
+#### Como Abrir o Shell no Replit
+
+1. **Localizando o Shell:**
+   - Na interface do Replit, procure pela aba **"Shell"** na parte inferior da tela ou na barra lateral esquerda
+   - Caso não esteja visível, clique no ícone de **"Tools"** (ferramentas) na barra lateral e selecione **"Shell"**
+   - Alternativamente, você pode usar o atalho `Ctrl + Shift + S` (ou `Cmd + Shift + S` no Mac)
+
+2. **Abrindo o Shell:**
+   - Clique na aba **"Shell"** para abrir o terminal
+   - Você verá um prompt de comando similar a: `~/p-way-merge-sort$`
+
+#### Executando o Programa
+
+1. **Navegue até o diretório do projeto:**
+   ```bash
+   cd p-way-merge-sort
+   ```
+
+2. **Execute o programa com os parâmetros necessários:**
+   ```bash
+   python3 pways_mergesort.py <p> <arquivo_de_entrada> <arquivo_de_saida>
+   ```
+
+**Exemplo prático:**
+```bash
+python3 pways_mergesort.py 3 input_file.txt output_file.txt
+```
+
+### Executando Localmente
 
 #### Pré-requisitos
 
@@ -77,6 +107,9 @@ Ao final da execução, além de gerar o arquivo de saída ordenado, o programa 
 -   `Ways`: O valor de `p` (caminhos) utilizado.
 -   `#Runs`: O número de sequências ordenadas iniciais geradas.
 -   `#Parses`: O número de passagens de intercalação necessárias para obter o arquivo final ordenado.
+
+
+
 
 
 Desenvolvido por Jean Anderson Hugo Jesus Santos
